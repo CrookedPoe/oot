@@ -19,7 +19,7 @@ void Select_LoadGame(SelectContext* this, s32 entranceIndex) {
     osSyncPrintf("\n\n\nＦＩＬＥ＿ＮＯ＝%x\n\n\n", gSaveContext.fileNum);
     osSyncPrintf(VT_RST);
     if (gSaveContext.fileNum == 0xFF) {
-        func_800A82C8();
+        Sram_InitDebugSave();
         gSaveContext.unk_13F6 = gSaveContext.magic;
         gSaveContext.magic = 0;
         gSaveContext.unk_13F4 = 0;
@@ -37,7 +37,7 @@ void Select_LoadGame(SelectContext* this, s32 entranceIndex) {
     gSaveContext.respawn[RESPAWN_MODE_DOWN].entranceIndex = -1;
     gSaveContext.seqIndex = 0xFF;
     gSaveContext.nightSeqIndex = 0xFF;
-    gSaveContext.unk_13C7 = 1;
+    gSaveContext.showTitleCard = true;
     D_8011FB30 = 0;
     this->state.running = false;
     SET_NEXT_GAMESTATE(&this->state, Gameplay_Init, GlobalContext);
@@ -275,13 +275,13 @@ void Select_UpdateMenu(SelectContext* this) {
                 this->unk_224 = 0x14;
                 this->unk_22C = 1;
                 Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-                this->unk_220 = SREG(30);
+                this->unk_220 = R_UPDATE_RATE;
             }
         }
 
         if (CHECK_BTN_ALL(controller1->cur.button, BTN_DUP) && this->unk_224 == 0) {
             Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-            this->unk_220 = SREG(30) * 3;
+            this->unk_220 = R_UPDATE_RATE * 3;
         }
 
         if (CHECK_BTN_ALL(controller1->press.button, BTN_DDOWN)) {
@@ -292,24 +292,24 @@ void Select_UpdateMenu(SelectContext* this) {
                 this->unk_228 = 0x14;
                 this->unk_230 = 1;
                 Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-                this->unk_220 = -SREG(30);
+                this->unk_220 = -R_UPDATE_RATE;
             }
         }
 
         if (CHECK_BTN_ALL(controller1->cur.button, BTN_DDOWN) && (this->unk_228 == 0)) {
             Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-            this->unk_220 = -SREG(30) * 3;
+            this->unk_220 = -R_UPDATE_RATE * 3;
         }
 
         if (CHECK_BTN_ALL(controller1->press.button, BTN_DLEFT) || CHECK_BTN_ALL(controller1->cur.button, BTN_DLEFT)) {
             Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-            this->unk_220 = SREG(30);
+            this->unk_220 = R_UPDATE_RATE;
         }
 
         if (CHECK_BTN_ALL(controller1->press.button, BTN_DRIGHT) ||
             CHECK_BTN_ALL(controller1->cur.button, BTN_DRIGHT)) {
             Audio_PlaySoundGeneral(NA_SE_IT_SWORD_IMPACT, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
-            this->unk_220 = -SREG(30);
+            this->unk_220 = -R_UPDATE_RATE;
         }
     }
 
@@ -429,7 +429,7 @@ void Select_PrintLoadingMessage(SelectContext* this, GfxPrint* printer) {
 
     GfxPrint_SetPos(printer, 0xA, 0xF);
     GfxPrint_SetColor(printer, 255, 255, 255, 255);
-    randomMsg = Math_Rand_ZeroOne() * ARRAY_COUNT(sLoadingMessages);
+    randomMsg = Rand_ZeroOne() * ARRAY_COUNT(sLoadingMessages);
     GfxPrint_Printf(printer, "%s", sLoadingMessages[randomMsg]);
 }
 
@@ -509,18 +509,18 @@ void Select_DrawMenu(SelectContext* this) {
 
     OPEN_DISPS(gfxCtx, "../z_select.c", 930);
 
-    gSPSegment(oGfxCtx->polyOpa.p++, 0x00, NULL);
+    gSPSegment(POLY_OPA_DISP++, 0x00, NULL);
     func_80095248(gfxCtx, 0, 0, 0);
     SET_FULLSCREEN_VIEWPORT(&this->view);
     func_800AAA50(&this->view, 0xF);
     func_80094140(gfxCtx);
     printer = alloca(sizeof(GfxPrint));
     GfxPrint_Init(printer);
-    GfxPrint_Open(printer, oGfxCtx->polyOpa.p);
+    GfxPrint_Open(printer, POLY_OPA_DISP);
     Select_PrintMenu(this, printer);
     Select_PrintAgeSetting(this, printer, ((void)0, gSaveContext.linkAge));
     Select_PrintCutsceneSetting(this, printer, ((void)0, gSaveContext.cutsceneIndex));
-    oGfxCtx->polyOpa.p = GfxPrint_Close(printer);
+    POLY_OPA_DISP = GfxPrint_Close(printer);
     GfxPrint_Destroy(printer);
 
     CLOSE_DISPS(gfxCtx, "../z_select.c", 966);
@@ -532,16 +532,16 @@ void Select_DrawLoadingScreen(SelectContext* this) {
 
     OPEN_DISPS(gfxCtx, "../z_select.c", 977);
 
-    gSPSegment(oGfxCtx->polyOpa.p++, 0x00, NULL);
+    gSPSegment(POLY_OPA_DISP++, 0x00, NULL);
     func_80095248(gfxCtx, 0, 0, 0);
     SET_FULLSCREEN_VIEWPORT(&this->view);
     func_800AAA50(&this->view, 0xF);
     func_80094140(gfxCtx);
     printer = alloca(sizeof(GfxPrint));
     GfxPrint_Init(printer);
-    GfxPrint_Open(printer, oGfxCtx->polyOpa.p);
+    GfxPrint_Open(printer, POLY_OPA_DISP);
     Select_PrintLoadingMessage(this, printer);
-    oGfxCtx->polyOpa.p = GfxPrint_Close(printer);
+    POLY_OPA_DISP = GfxPrint_Close(printer);
     GfxPrint_Destroy(printer);
 
     CLOSE_DISPS(gfxCtx, "../z_select.c", 1006);
@@ -552,7 +552,7 @@ void Select_Draw(SelectContext* this) {
 
     OPEN_DISPS(gfxCtx, "../z_select.c", 1013);
 
-    gSPSegment(oGfxCtx->polyOpa.p++, 0x00, NULL);
+    gSPSegment(POLY_OPA_DISP++, 0x00, NULL);
     func_80095248(gfxCtx, 0, 0, 0);
     SET_FULLSCREEN_VIEWPORT(&this->view);
     func_800AAA50(&this->view, 0xF);
@@ -566,20 +566,23 @@ void Select_Draw(SelectContext* this) {
     CLOSE_DISPS(gfxCtx, "../z_select.c", 1037);
 }
 
-void Select_Main(SelectContext* this) {
+void Select_Main(GameState* thisx) {
+    SelectContext* this = (SelectContext*)thisx;
+
     Select_UpdateMenu(this);
     Select_Draw(this);
 }
 
-void Select_Destroy(SelectContext* this) {
+void Select_Destroy(GameState* thisx) {
     osSyncPrintf("%c", 7);
     // "view_cleanup will hang, so it won't be called"
     osSyncPrintf("*** view_cleanupはハングアップするので、呼ばない ***\n");
 }
 
-void Select_Init(SelectContext* this) {
+void Select_Init(GameState* thisx) {
+    SelectContext* this = (SelectContext*)thisx;
     u32 size;
-    s32 pad[2];
+    s32 pad;
 
     this->state.main = Select_Main;
     this->state.destroy = Select_Destroy;
@@ -613,9 +616,9 @@ void Select_Init(SelectContext* this) {
         this->unk_20C = dREG(81);
         this->unk_1DC = dREG(82);
     }
-    SREG(30) = 1;
+    R_UPDATE_RATE = 1;
 
-    this->staticSegment = GameState_Alloc(this, size, "../z_select.c", 1114);
+    this->staticSegment = GameState_Alloc(&this->state, size, "../z_select.c", 1114);
     DmaMgr_SendRequest1(this->staticSegment, _z_select_staticSegmentRomStart, size, "../z_select.c", 1115);
     gSaveContext.cutsceneIndex = 0x8000;
     gSaveContext.linkAge = 1;

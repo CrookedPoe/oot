@@ -9,7 +9,7 @@ struct EnMag;
 typedef struct EnMag {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ char unk_14C[0x0004];
-    /* 0x0150 */ u8 unk_150[0xE188]; // kanfont struct/buffer
+    /* 0x0150 */ Font font;
     /* 0xE2D8 */ s16 effectFadeInState;
     /* 0xE2DA */ s16 effectFadeInTimer;
     /* 0xE2DC */ s16 globalState;
@@ -41,18 +41,5 @@ typedef enum {
     /* 0x03 */ MAG_STATE_FADE_OUT,
     /* 0x04 */ MAG_STATE_POST_DISPLAY
 } EnMagGlobalState;
-
-#define gSetTileCustom(pkt, fmt, siz, width, height, pal, cms, cmt, masks, maskt, shifts, shiftt)                      \
-    do {                                                                                                               \
-        gDPPipeSync(pkt);                                                                                              \
-        gDPTileSync(pkt);                                                                                              \
-        gDPSetTile(pkt, fmt, siz, (((width)*siz##_TILE_BYTES) + 7) >> 3, 0, G_TX_LOADTILE, 0, cmt, maskt, shiftt, cms, \
-                   masks, shifts);                                                                                     \
-        gDPTileSync(pkt);                                                                                              \
-        gDPSetTile(pkt, fmt, siz, (((width)*siz##_TILE_BYTES) + 7) >> 3, 0, G_TX_RENDERTILE, pal, cmt, maskt, shiftt,  \
-                   cms, masks, shifts);                                                                                \
-        gDPSetTileSize(pkt, G_TX_RENDERTILE, 0, 0, ((width)-1) << G_TEXTURE_IMAGE_FRAC,                                \
-                       ((height)-1) << G_TEXTURE_IMAGE_FRAC);                                                          \
-    } while (0);
 
 #endif

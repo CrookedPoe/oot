@@ -34,7 +34,7 @@ InputCombo inputCombos[REG_GROUPS] = {
 char regChar[] = " SOPQMYDUIZCNKXcsiWAVHGmnBdkb";
 
 // initialize GameInfo
-void func_800636C0() {
+void func_800636C0(void) {
     s32 i;
 
     gGameInfo = (GameInfo*)SystemArena_MallocDebug(sizeof(GameInfo), "../z_debug.c", 260);
@@ -67,7 +67,7 @@ void func_8006376C(u8 x, u8 y, u8 colorId, const char* text) {
 
         i = 0;
         bufText = buf->text;
-        while (*bufText++ = *text++) {
+        while ((*bufText++ = *text++)) {
             if (i++ > 0x14) {
                 break;
             }
@@ -188,13 +188,10 @@ void func_8006390C(Input* input) {
 // Draw Memory Viewer
 void func_80063C04(GfxPrint* gfxPrint) {
     s32 i;
-    s32 page;
-    s32 regGroup;
-    s32 test; // removing affects stack
+    s32 page = (gGameInfo->regPage * REG_PER_PAGE) - REG_PER_PAGE;
+    s32 regGroup = (gGameInfo->regGroup * REG_PAGES + gGameInfo->regPage) * REG_PER_PAGE - REG_PER_PAGE;
+    s32 pad;
     char name[3];
-
-    page = (gGameInfo->regPage * REG_PER_PAGE) - REG_PER_PAGE;
-    regGroup = (gGameInfo->regGroup * REG_PAGES + gGameInfo->regPage) * REG_PER_PAGE - REG_PER_PAGE;
 
     // set up register name string
     name[0] = 'R';
@@ -223,9 +220,9 @@ void func_80063D7C(GraphicsContext* gfxCtx) {
     OPEN_DISPS(gfxCtx, "../z_debug.c", 628);
 
     GfxPrint_Init(&gfxPrint);
-    sp78 = oGfxCtx->polyOpa.p;
-    tempRet = Graph_GfxPlusOne(oGfxCtx->polyOpa.p);
-    gSPDisplayList(oGfxCtx->overlay.p++, tempRet);
+    sp78 = POLY_OPA_DISP;
+    tempRet = Graph_GfxPlusOne(POLY_OPA_DISP);
+    gSPDisplayList(OVERLAY_DISP++, tempRet);
     GfxPrint_Open(&gfxPrint, tempRet);
 
     if ((OREG(0) == 1) || (OREG(0) == 8)) {
@@ -240,9 +237,9 @@ void func_80063D7C(GraphicsContext* gfxCtx) {
     sp7C = GfxPrint_Close(&gfxPrint);
     gSPEndDisplayList(sp7C++);
     Graph_BranchDlist(sp78, sp7C);
-    oGfxCtx->polyOpa.p = sp7C;
+    POLY_OPA_DISP = sp7C;
 
-    if (0) {}
+    if (1) {}
 
     CLOSE_DISPS(gfxCtx, "../z_debug.c", 664);
 

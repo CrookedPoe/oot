@@ -24,7 +24,7 @@ extern u8 D_06024E40[]; // "Ocarina of Time"
 
 const ActorInit En_Mag_InitVars = {
     ACTOR_EN_MAG,
-    ACTORTYPE_PROP,
+    ACTORCAT_PROP,
     FLAGS,
     OBJECT_MAG,
     sizeof(EnMag),
@@ -98,7 +98,7 @@ void EnMag_Init(Actor* thisx, GlobalContext* globalCtx) {
         gSaveContext.unk_1419 = 255;
     }
 
-    func_8006EF10(&this->unk_150);
+    Font_LoadOrderedFont(&this->font);
 
     this->unk_E316 = 0;
     this->unk_E318 = 0;
@@ -330,8 +330,8 @@ void EnMag_DrawImageRGBA32(Gfx** gfxp, s16 centerX, s16 centerY, u8* source, u32
         textureCount += 1;
     }
 
-    gSetTileCustom(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_32b, width, textureHeight, 0, G_TX_NOMIRROR | G_TX_CLAMP,
-                   G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+    gDPSetTileCustom(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_32b, width, textureHeight, 0, G_TX_NOMIRROR | G_TX_CLAMP,
+                     G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 
     remainingSize -= textureSize;
 
@@ -344,8 +344,6 @@ void EnMag_DrawImageRGBA32(Gfx** gfxp, s16 centerX, s16 centerY, u8* source, u32
         gSPTextureRectangle(gfx++, rectLeft << 2, rectTop << 2, (rectLeft + (s32)width) << 2,
                             (rectTop + textureHeight) << 2, G_TX_RENDERTILE, 0, 0, 1024, 1024);
 
-        if (1) {}
-
         curTexture += textureSize;
         rectTop += textureHeight;
 
@@ -354,8 +352,9 @@ void EnMag_DrawImageRGBA32(Gfx** gfxp, s16 centerX, s16 centerY, u8* source, u32
                 textureHeight = remainingSize / (s32)(width << 2);
                 remainingSize -= textureSize;
 
-                gSetTileCustom(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_32b, width, textureHeight, 0, G_TX_NOMIRROR | G_TX_CLAMP,
-                               G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+                gDPSetTileCustom(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_32b, width, textureHeight, 0,
+                                 G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK,
+                                 G_TX_NOLOD, G_TX_NOLOD);
             }
         } else {
             remainingSize -= textureSize;
@@ -394,7 +393,7 @@ void EnMag_DrawInner(Actor* thisx, GlobalContext* globalCtx, Gfx** gfxp) {
         0x06020000, 0x06020800, 0x06021000, 0x06021800, 0x06022000, 0x06022800, 0x06023000, 0x06023800, 0x06024000,
     };
     EnMag* this = THIS;
-    u8* buf = this->unk_150;
+    Font* font = &this->font;
     s32 pad;
     Gfx* gfx = *gfxp;
     u16 i, j, k;
@@ -496,7 +495,8 @@ void EnMag_DrawInner(Actor* thisx, GlobalContext* globalCtx, Gfx** gfxp) {
 
         rectLeft = VREG(19) + 1;
         for (i = 0; i < ARRAY_COUNT(noControllerFontIndexes); i++) {
-            EnMag_DrawCharTexture(&gfx, buf + 0x3C88 + (noControllerFontIndexes[i] * 0x80), rectLeft, YREG(10) + 172);
+            EnMag_DrawCharTexture(&gfx, font->fontBuf + noControllerFontIndexes[i] * FONT_CHAR_TEX_SIZE, rectLeft,
+                                  YREG(10) + 172);
             rectLeft += VREG(21);
             if (i == 1) {
                 rectLeft += VREG(23);
@@ -509,7 +509,8 @@ void EnMag_DrawInner(Actor* thisx, GlobalContext* globalCtx, Gfx** gfxp) {
 
         rectLeft = VREG(19);
         for (i = 0; i < ARRAY_COUNT(noControllerFontIndexes); i++) {
-            EnMag_DrawCharTexture(&gfx, buf + 0x3C88 + (noControllerFontIndexes[i] * 0x80), rectLeft, YREG(10) + 171);
+            EnMag_DrawCharTexture(&gfx, font->fontBuf + noControllerFontIndexes[i] * FONT_CHAR_TEX_SIZE, rectLeft,
+                                  YREG(10) + 171);
             rectLeft += VREG(21);
             if (i == 1) {
                 rectLeft += VREG(23);
@@ -530,7 +531,8 @@ void EnMag_DrawInner(Actor* thisx, GlobalContext* globalCtx, Gfx** gfxp) {
 
         rectLeft = YREG(7) + 1;
         for (i = 0; i < ARRAY_COUNT(pressStartFontIndexes); i++) {
-            EnMag_DrawCharTexture(&gfx, buf + 0x3C88 + (pressStartFontIndexes[i] * 0x80), rectLeft, YREG(10) + 172);
+            EnMag_DrawCharTexture(&gfx, font->fontBuf + pressStartFontIndexes[i] * FONT_CHAR_TEX_SIZE, rectLeft,
+                                  YREG(10) + 172);
             rectLeft += YREG(8);
             if (i == 4) {
                 rectLeft += YREG(9);
@@ -543,7 +545,8 @@ void EnMag_DrawInner(Actor* thisx, GlobalContext* globalCtx, Gfx** gfxp) {
 
         rectLeft = YREG(7);
         for (i = 0; i < ARRAY_COUNT(pressStartFontIndexes); i++) {
-            EnMag_DrawCharTexture(&gfx, buf + 0x3C88 + (pressStartFontIndexes[i] * 0x80), rectLeft, YREG(10) + 171);
+            EnMag_DrawCharTexture(&gfx, font->fontBuf + pressStartFontIndexes[i] * FONT_CHAR_TEX_SIZE, rectLeft,
+                                  YREG(10) + 171);
             rectLeft += YREG(8);
             if (i == 4) {
                 rectLeft += YREG(9);
@@ -571,15 +574,15 @@ void EnMag_Draw(Actor* thisx, GlobalContext* globalCtx) {
 
     OPEN_DISPS(globalCtx->state.gfxCtx, "../z_en_mag.c", 1151);
 
-    gfxRef = oGfxCtx->polyOpa.p;
+    gfxRef = POLY_OPA_DISP;
     gfx = Graph_GfxPlusOne(gfxRef);
-    gSPDisplayList(oGfxCtx->overlay.p++, gfx);
+    gSPDisplayList(OVERLAY_DISP++, gfx);
 
     EnMag_DrawInner(thisx, globalCtx, &gfx);
 
     gSPEndDisplayList(gfx++);
     Graph_BranchDlist(gfxRef, gfx);
-    oGfxCtx->polyOpa.p = gfx;
+    POLY_OPA_DISP = gfx;
 
     CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_en_mag.c", 1161);
 }
